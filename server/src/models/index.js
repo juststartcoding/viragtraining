@@ -108,6 +108,7 @@ const settingSchema = new Schema(
     address: str,
     mapEmbedUrl: str,
     workingHours: str,
+    showCourseFees: { type: Boolean, default: false }, // classroom course fees on the public site
     paymentInstructions: { ...str, default: 'Pay via UPI / bank transfer and share the screenshot on WhatsApp. Your access will be activated after verification.' },
     heroTitle: str,
     heroSubtitle: str,

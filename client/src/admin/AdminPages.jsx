@@ -250,6 +250,7 @@ export function Enquiries() {
 const SETTING_GROUPS = [
   { title: 'General', fields: [['siteName', 'Site name'], ['tagline', 'Tagline'], ['logo', 'Logo (optional)', 'image']] },
   { title: 'Contact', fields: [['phone', 'Phone'], ['whatsapp', 'WhatsApp number (with country code, e.g. 919876543210)'], ['email', 'Email'], ['workingHours', 'Working hours'], ['address', 'Address', 'textarea'], ['paymentInstructions', 'Manual payment instructions (UPI ID / bank details – shown when Razorpay is not configured)', 'textarea'], ['mapEmbedUrl', 'Google Maps embed URL (https://www.google.com/maps/embed?...)']] },
+  { title: 'Courses', fields: [['showCourseFees', 'Show course fees on the website (when off, visitors see “Get fee details” and are asked to enquire)', 'checkbox']] },
   { title: 'Home page hero', fields: [['heroTitle', 'Hero title'], ['heroSubtitle', 'Hero subtitle', 'textarea'], ['heroImage', 'Hero image (optional)', 'image']] },
   { title: 'About page', fields: [['aboutTitle', 'About heading'], ['aboutText', 'About text', 'textarea'], ['mission', 'Mission', 'textarea'], ['vision', 'Vision', 'textarea']] },
 ];
@@ -291,9 +292,14 @@ export function SiteSettings() {
           <h2 className="mb-4 text-lg">{g.title}</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             {g.fields.map(([k, label, type]) => (
-              <div key={k} className={type === 'textarea' || k === 'mapEmbedUrl' ? 'sm:col-span-2' : ''}>
-                <label className="label">{label}</label>
-                {type === 'image' ? <ImageField value={form[k]} onChange={(v) => set(k, v)} />
+              <div key={k} className={type === 'textarea' || type === 'checkbox' || k === 'mapEmbedUrl' ? 'sm:col-span-2' : ''}>
+                {type !== 'checkbox' && <label className="label">{label}</label>}
+                {type === 'checkbox' ? (
+                  <label className="flex cursor-pointer items-center gap-3 text-sm">
+                    <input type="checkbox" className="h-5 w-5 accent-brand-600" checked={!!form[k]} onChange={(e) => set(k, e.target.checked)} />
+                    {label}
+                  </label>
+                ) : type === 'image' ? <ImageField value={form[k]} onChange={(v) => set(k, v)} />
                   : type === 'textarea' ? <textarea className="input" rows={4} value={form[k] || ''} onChange={(e) => set(k, e.target.value)} />
                   : <input className="input" value={form[k] || ''} onChange={(e) => set(k, e.target.value)} />}
               </div>

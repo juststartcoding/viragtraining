@@ -46,7 +46,7 @@ export function CourseCard({ course, index }) {
         <h3 className="text-lg group-hover:text-brand-700">{course.title}</h3>
         <p className="mt-2 line-clamp-3 flex-1 text-sm text-slate-500">{course.shortDescription}</p>
         <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4">
-          <span className="font-bold text-slate-900">{course.fee || 'Enquire for fee'}</span>
+          {course.fee ? <span className="font-bold text-slate-900">{course.fee}</span> : <span className="text-sm font-medium text-slate-500">Get fee details</span>}
           <span className="flex items-center gap-1 text-sm font-semibold text-brand-600">
             Details <FaArrowRight className="transition group-hover:translate-x-1" />
           </span>

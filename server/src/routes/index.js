@@ -18,7 +18,13 @@ router.use('/upload', uploadRoutes);
 router.use('/', lmsRoutes);
 
 /* ---- Content resources (add a new model + one line here to add a new section) ---- */
-router.use('/courses', crudRouter(Course, { searchFields: ['title', 'shortDescription', 'technologies'] }));
+// Course fees are only sent to the public when Admin → Site Settings → "Show course fees" is on
+const courseFees = async (course) => {
+  if (await Setting.exists({ showCourseFees: true })) return course;
+  const { fee, ...rest } = course;
+  return rest;
+};
+router.use('/courses', crudRouter(Course, { searchFields: ['title', 'shortDescription', 'technologies'], transform: courseFees }));
 router.use('/products', crudRouter(Product, { searchFields: ['title', 'shortDescription', 'features'] }));
 router.use('/services', crudRouter(Service, { filterFields: [] }));
 router.use('/portfolio', crudRouter(Portfolio, { searchFields: ['title', 'client'] }));
