@@ -97,8 +97,13 @@ Check: `curl http://127.0.0.1:5081/api/health` → `{"ok":true}`
 
 CyberPanel → **Websites → List Websites → viragtrainingsolutions.com → Manage**
 
-**a) vHost Conf** – add this block at the end and save:
-```
+**a) vHost Conf** – the whole block below must end up at the end of the vHost config. Adding it from the terminal is the most reliable way, because the CyberPanel editor sometimes saves only part of a pasted block:
+```bash
+F=/usr/local/lsws/conf/vhosts/viragtrainingsolutions.com/vhost.conf
+cp "$F" "$F.bak-$(date +%F-%H%M)"
+sed -i '/^extprocessor viragnode/,/^}/d; /^extprocessor viragnode/d' "$F"   # remove any old or partial copy
+cat >> "$F" <<'CONF'
+
 extprocessor viragnode {
   type                    proxy
   address                 127.0.0.1:5081
@@ -108,9 +113,11 @@ extprocessor viragnode {
   retryTimeout            0
   respBuffer              0
 }
+CONF
+tail -n 12 "$F"     # must show the complete block, ending with }
 ```
 
-**b) Rewrite Rules** – replace everything (the old CodeIgniter rules) with:
+**b) Rewrite Rules** (CyberPanel saves these in `public_html/.htaccess`) – replace everything (the old CodeIgniter rules) with:
 ```
 REWRITEENGINE On
 REWRITECOND %{HTTPS} !=on
@@ -124,9 +131,10 @@ REWRITERULE ^(.*)$ HTTP://viragnode/$1 [P,L]
 
 **e) Clear the old site** (after the new site works, and only with the backup from step 1):
 ```bash
-cd /home/viragtrainingsolutions.com/public_html && mkdir -p ../old-php && mv * .htaccess ../old-php/ 2>/dev/null; true
+cd /home/viragtrainingsolutions.com/public_html && mkdir -p ../old-php
+find . -mindepth 1 -maxdepth 1 ! -name .htaccess -exec mv {} ../old-php/ \;
 ```
-Requests no longer reach `public_html`, but this keeps old PHP files (and any config with DB passwords) from being served if the proxy rule is ever removed.
+**Keep `.htaccess`** – it holds the proxy rewrite rules from step 7b. Moving the old PHP files out keeps them (and any config with DB passwords) from being served if the proxy rule is ever removed.
 
 Open https://viragtrainingsolutions.com and https://viragtrainingsolutions.com/admin/login. Change the admin password from **Admin → Account** right away.
 
