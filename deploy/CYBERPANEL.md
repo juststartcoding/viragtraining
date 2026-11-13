@@ -1,7 +1,7 @@
 # Deploying on CyberPanel (OpenLiteSpeed)
 
 This guide replaces the old PHP/CodeIgniter site on **viragtrainingsolutions.com** with this Node.js app.
-OpenLiteSpeed keeps handling the domain and SSL, and forwards every request to the Node app running on `127.0.0.1:5000` under PM2.
+OpenLiteSpeed keeps handling the domain and SSL, and forwards every request to the Node app running on `127.0.0.1:5081` under PM2.
 
 ```
 Browser ──https──▶ OpenLiteSpeed (CyberPanel, SSL) ──proxy──▶ Node app :5081 (PM2) ──▶ MongoDB
