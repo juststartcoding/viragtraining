@@ -66,6 +66,8 @@ Admin login: http://localhost:5173/admin/login, using the `ADMIN_EMAIL` / `ADMIN
 
 ## Production deployment (VPS / Hostinger VPS / Render / Railway)
 
+**CyberPanel / OpenLiteSpeed (viragtrainingsolutions.com):** follow [deploy/CYBERPANEL.md](deploy/CYBERPANEL.md).
+
 ```bash
 npm run install:all
 npm run build          # builds client/dist

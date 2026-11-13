@@ -52,7 +52,8 @@ if (!process.env.JWT_SECRET) {
 }
 connectDB()
   .then(ensureAdmin)
-  .then(() => app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`)))
+  // In production set HOST=127.0.0.1 so the app is reachable only through the web server (OpenLiteSpeed/Nginx) proxy
+  .then(() => app.listen(PORT, process.env.HOST || '0.0.0.0', () => console.log(`Server running on http://${process.env.HOST || 'localhost'}:${PORT}`)))
   .catch((err) => {
     console.error('Startup failed:', err.message);
     process.exit(1);
