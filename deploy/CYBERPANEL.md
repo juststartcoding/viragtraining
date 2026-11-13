@@ -4,7 +4,7 @@ This guide replaces the old PHP/CodeIgniter site on **viragtrainingsolutions.com
 OpenLiteSpeed keeps handling the domain and SSL, and forwards every request to the Node app running on `127.0.0.1:5000` under PM2.
 
 ```
-Browser ──https──▶ OpenLiteSpeed (CyberPanel, SSL) ──proxy──▶ Node app :5000 (PM2) ──▶ MongoDB
+Browser ──https──▶ OpenLiteSpeed (CyberPanel, SSL) ──proxy──▶ Node app :5081 (PM2) ──▶ MongoDB
 ```
 
 > Replace `viragtrainingsolutions.com` below if your CyberPanel website name differs.
@@ -53,7 +53,15 @@ cd app
 ```
 (If the repo is private, use a GitHub personal access token or add the server's SSH key as a deploy key.)
 
-## 5. Configure `.env`
+## 5. Pick a free port
+
+Other sites on the same server may already use port 5000. Check that the port you choose prints nothing:
+```bash
+ss -ltnp | grep ':5081 '
+```
+This guide uses **5081**. Use the same number in `.env` (`PORT`) and in the vHost `extprocessor` address.
+
+## 5b. Configure `.env`
 
 ```bash
 cp server/.env.example server/.env
@@ -61,7 +69,7 @@ nano server/.env
 ```
 Set at least:
 ```
-PORT=5000
+PORT=5081
 HOST=127.0.0.1
 NODE_ENV=production
 MONGO_URI=<your connection string from step 3>
@@ -83,7 +91,7 @@ npm --prefix server run seed   # optional: starter courses/services (fills empty
 pm2 startup                    # run the command it prints, so the app starts after a reboot
 pm2 save
 ```
-Check: `curl http://127.0.0.1:5000/api/health` → `{"ok":true}`
+Check: `curl http://127.0.0.1:5081/api/health` → `{"ok":true}`
 
 ## 7. Point the domain to the Node app (CyberPanel)
 
@@ -93,7 +101,7 @@ CyberPanel → **Websites → List Websites → viragtrainingsolutions.com → M
 ```
 extprocessor viragnode {
   type                    proxy
-  address                 127.0.0.1:5000
+  address                 127.0.0.1:5081
   maxConns                200
   pcKeepAliveTimeout      60
   initTimeout             60
@@ -138,9 +146,11 @@ cd /home/viragtrainingsolutions.com/app && bash deploy/update.sh
 
 | Problem | Check |
 |---|---|
-| 503 / "Service unavailable" | `pm2 status`, `pm2 logs virag --lines 50`; check `curl 127.0.0.1:5000/api/health` |
+| 503 / "Service unavailable" | `pm2 status`, `pm2 logs virag --lines 50`; check `curl 127.0.0.1:5081/api/health` |
 | Old PHP site still shows | Rewrite rules saved? Graceful restart done? Clear browser cache / Cloudflare cache |
 | `MongoServerSelectionError` | Atlas: server IP added in Network Access? Correct password in `MONGO_URI`? |
 | Images upload but don't show | Folder permissions: `chown -R <site-user>: server/uploads` |
 | Too many redirects | If Cloudflare is used, set SSL mode to **Full (strict)** |
 | Old Google links show 404 | Old CodeIgniter URLs (e.g. `/index.php/...`) can be 301-redirected with extra `REWRITERULE` lines placed before the proxy rule |
+| Log says `Proxy target is not defined ... 'viragnode'` | The `extprocessor viragnode` block is missing from the vHost config. Check with `grep -n -A8 viragnode /usr/local/lsws/conf/vhosts/viragtrainingsolutions.com/vhost.conf`, add it at the top level (not inside another `{ }` block), then Graceful Restart |
+| Health check returns something other than `{"ok":true}` | Another app owns that port. Choose a free port (step 5), update `PORT` and the `extprocessor` address, then `pm2 restart virag --update-env` |

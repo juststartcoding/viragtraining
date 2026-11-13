@@ -23,5 +23,8 @@ else
 fi
 pm2 save
 
-echo "✅ Deployed. Health check:"
-curl -fsS "http://127.0.0.1:${PORT:-5000}/api/health" && echo
+PORT=$(grep -E '^PORT=' server/.env | cut -d= -f2 | tr -d '\r ' || true)
+PORT=${PORT:-5000}
+sleep 2
+echo "✅ Deployed. Health check on port $PORT (expect {\"ok\":true}):"
+curl -fsS "http://127.0.0.1:$PORT/api/health" && echo
