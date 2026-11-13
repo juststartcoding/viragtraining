@@ -32,7 +32,7 @@ app.use('/api', (_req, res) => res.status(404).json({ message: 'API route not fo
 const clientDist = path.join(__dirname, '../../client/dist');
 if (fs.existsSync(clientDist)) {
   app.use(express.static(clientDist, { index: false, maxAge: '7d' }));
-  app.use((req, res, next) => (req.method === 'GET' ? res.sendFile(path.join(clientDist, 'index.html')) : next()));
+  app.use((req, res, next) => (['GET', 'HEAD'].includes(req.method) ? res.sendFile(path.join(clientDist, 'index.html')) : next()));
 }
 
 app.use(errorHandler);
