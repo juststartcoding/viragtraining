@@ -101,7 +101,8 @@ CyberPanel → **Websites → List Websites → viragtrainingsolutions.com → M
 ```bash
 F=/usr/local/lsws/conf/vhosts/viragtrainingsolutions.com/vhost.conf
 cp "$F" "$F.bak-$(date +%F-%H%M)"
-sed -i '/^extprocessor viragnode/,/^}/d; /^extprocessor viragnode/d' "$F"   # remove any old or partial copy
+# remove any old or partial copy (a full block up to its closing }, or a lone header line)
+awk '/^extprocessor viragnode/{skip=($0 ~ /\{/); next} skip && /^}/{skip=0; next} !skip' "$F" > /tmp/vhost.new && cat /tmp/vhost.new > "$F"
 cat >> "$F" <<'CONF'
 
 extprocessor viragnode {
