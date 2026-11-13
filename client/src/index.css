@@ -1,0 +1,135 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #eff5ff;
+  --color-brand-100: #dbe8fe;
+  --color-brand-200: #bfd5fe;
+  --color-brand-300: #93b8fd;
+  --color-brand-400: #6090fa;
+  --color-brand-500: #3b6cf6;
+  --color-brand-600: #2550eb;
+  --color-brand-700: #1d3fd8;
+  --color-brand-800: #1e35af;
+  --color-brand-900: #1e318a;
+  --color-brand-950: #121d4d;
+
+  --color-accent-400: #fb923c;
+  --color-accent-500: #f97316;
+  --color-accent-600: #ea580c;
+}
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  body { @apply bg-white text-slate-700 antialiased; }
+  h1, h2, h3, h4 { @apply text-slate-900 font-bold tracking-tight; }
+}
+
+@layer components {
+  .container-x { @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8; }
+  .section { @apply py-16 md:py-24; }
+
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed; }
+  /* usage: className="btn btn-primary" (add btn-sm for small) */
+  .btn-primary { @apply bg-brand-600 text-white shadow-lg shadow-brand-600/25 hover:bg-brand-700; }
+  .btn-accent { @apply bg-accent-500 text-white shadow-lg shadow-accent-500/30 hover:bg-accent-600; }
+  .btn-outline { @apply border border-slate-300 bg-white text-slate-800 hover:border-brand-600 hover:text-brand-700; }
+  .btn-ghost-light { @apply border border-white/30 text-white hover:bg-white/10; }
+  .btn-danger { @apply bg-red-50 text-red-600 hover:bg-red-100; }
+  .btn-sm { @apply px-3 py-2 text-xs rounded-lg; }
+
+  .card { @apply rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300; }
+  .card-hover { @apply hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/70 hover:border-brand-200; }
+
+  .input { @apply w-full rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-100; }
+  .label { @apply mb-1.5 block text-sm font-medium text-slate-700; }
+
+  .chip { @apply inline-flex items-center rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700; }
+  .eyebrow { @apply inline-flex items-center gap-2 rounded-full bg-brand-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-brand-700; }
+
+  .prose-text { @apply whitespace-pre-line leading-relaxed text-slate-600; }
+}
+
+.hero-grid {
+  background-image:
+    radial-gradient(circle at 20% 20%, rgb(59 108 246 / 0.35), transparent 40%),
+    radial-gradient(circle at 80% 0%, rgb(249 115 22 / 0.18), transparent 35%),
+    linear-gradient(to right, rgb(255 255 255 / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.05) 1px, transparent 1px);
+  background-size: auto, auto, 40px 40px, 40px 40px;
+}
+
+/* ================= 3D / premium effects ================= */
+@layer components {
+  .glass { @apply border border-white/15 bg-white/10 shadow-2xl shadow-black/20 backdrop-blur-xl; }
+  .glass-light { @apply border border-white/60 bg-white/70 shadow-xl shadow-brand-900/10 backdrop-blur-xl; }
+  .text-gradient { @apply bg-gradient-to-r from-accent-400 via-amber-300 to-accent-500 bg-clip-text text-transparent; }
+  .text-gradient-brand { @apply bg-gradient-to-r from-brand-600 via-indigo-500 to-purple-600 bg-clip-text text-transparent; }
+  .bg-dots { background-image: radial-gradient(rgb(37 80 235 / 0.08) 1px, transparent 1px); background-size: 22px 22px; }
+  /* 3D icon tile: layered shadow gives depth */
+  .icon-3d {
+    @apply flex items-center justify-center rounded-2xl text-white;
+    box-shadow: 0 1px 0 rgb(255 255 255 / 0.35) inset, 0 -6px 12px rgb(0 0 0 / 0.18) inset, 0 12px 24px -8px rgb(18 29 77 / 0.45);
+  }
+  .btn-primary, .btn-accent { position: relative; overflow: hidden; }
+  .btn-primary::after, .btn-accent::after {
+    content: ''; position: absolute; inset: 0; transform: translateX(-120%) skewX(-20deg);
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.35), transparent); transition: transform 0.7s;
+  }
+  .btn-primary:hover::after, .btn-accent:hover::after { transform: translateX(120%) skewX(-20deg); }
+}
+
+.grid-lines {
+  background-image: linear-gradient(rgb(255 255 255 / 0.12) 1px, transparent 1px), linear-gradient(90deg, rgb(255 255 255 / 0.12) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Tilt cards */
+.tilt { position: relative; transform-style: preserve-3d; will-change: transform; }
+.tilt-glare {
+  pointer-events: none; position: absolute; inset: 0; border-radius: inherit; opacity: 0; transition: opacity 0.3s; z-index: 5;
+  background: radial-gradient(circle at var(--gx, 50%) var(--gy, 0%), rgb(255 255 255 / 0.35), transparent 55%);
+}
+.tilt:hover .tilt-glare { opacity: 1; }
+
+/* Scroll reveal */
+.reveal { opacity: 0; transform: translateY(28px) scale(0.98); transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.2,.8,.2,1); }
+.reveal-in { opacity: 1; transform: none; }
+
+/* Floating animation */
+@keyframes float-y { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-14px) } }
+.animate-float { animation: float-y 6s ease-in-out infinite; }
+.animate-float-slow { animation: float-y 8s ease-in-out infinite; }
+.animate-float-delay { animation: float-y 7s ease-in-out 1.5s infinite; }
+
+/* Marquee */
+@keyframes marquee { to { transform: translateX(-50%) } }
+.marquee-track { display: flex; width: max-content; animation: marquee 35s linear infinite; }
+.marquee:hover .marquee-track { animation-play-state: paused; }
+.marquee { mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent); }
+
+/* Glow orbs */
+@keyframes orb { 0%, 100% { transform: translate(0, 0) scale(1) } 50% { transform: translate(30px, -20px) scale(1.1) } }
+.orb { position: absolute; border-radius: 9999px; filter: blur(60px); animation: orb 12s ease-in-out infinite; pointer-events: none; }
+
+/* CSS 3D cube */
+.cube-scene { width: var(--s); height: var(--s); perspective: 700px; }
+.cube { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; animation: cube-spin 18s linear infinite; }
+.cube-face {
+  position: absolute; inset: 0; border: 1px solid rgb(147 184 253 / 0.55); border-radius: 14px;
+  background: linear-gradient(135deg, rgb(59 108 246 / 0.28), rgb(249 115 22 / 0.12)); backdrop-filter: blur(2px);
+  box-shadow: inset 0 0 30px rgb(147 184 253 / 0.25);
+}
+.cube-front { transform: translateZ(calc(var(--s) / 2)); }
+.cube-back { transform: rotateY(180deg) translateZ(calc(var(--s) / 2)); }
+.cube-right { transform: rotateY(90deg) translateZ(calc(var(--s) / 2)); }
+.cube-left { transform: rotateY(-90deg) translateZ(calc(var(--s) / 2)); }
+.cube-top { transform: rotateX(90deg) translateZ(calc(var(--s) / 2)); }
+.cube-bottom { transform: rotateX(-90deg) translateZ(calc(var(--s) / 2)); }
+@keyframes cube-spin { from { transform: rotateX(-20deg) rotateY(0) } to { transform: rotateX(-20deg) rotateY(360deg) } }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float, .animate-float-slow, .animate-float-delay, .marquee-track, .orb, .cube { animation: none !important; }
+  .reveal { opacity: 1; transform: none; }
+}
