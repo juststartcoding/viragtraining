@@ -6,3 +6,5 @@ server/uploads/*
 .DS_Store
 *.log
 logs/
+client/dist-new/
+client/dist-old/

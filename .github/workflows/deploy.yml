@@ -1,0 +1,88 @@
+# Auto-deploy: every push to main is built on GitHub first, then deployed to the
+# CyberPanel server over SSH (runs deploy/update.sh there).
+#
+# Required repository secrets (Settings → Secrets and variables → Actions):
+#   SSH_HOST         server public IP (not the Cloudflare domain)
+#   SSH_USER         e.g. root
+#   SSH_PRIVATE_KEY  private key whose public key is in the server's ~/.ssh/authorized_keys
+# Optional:
+#   SSH_PORT         default 22
+#   SSH_KNOWN_HOSTS  output of `ssh-keyscan -p <port> <server-ip>` (recommended)
+#   APP_DIR          default /home/viragtrainingsolutions.com/app
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['**.md']
+  workflow_dispatch: # "Run workflow" button for a manual deploy
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            client/package-lock.json
+            server/package-lock.json
+      - name: Install server dependencies
+        run: npm --prefix server ci --omit=dev --no-audit --no-fund
+      - name: Check server code loads
+        run: node --check server/src/index.js && node -e "import('./server/src/routes/index.js').then(() => console.log('server modules OK'))"
+      - name: Build website
+        run: |
+          npm --prefix client ci --no-audit --no-fund
+          npm --prefix client run build
+
+  deploy:
+    name: Deploy to server
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    steps:
+      - name: Deploy over SSH
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+          APP_DIR: ${{ secrets.APP_DIR }}
+        run: |
+          set -euo pipefail
+          : "${SSH_HOST:?Add the SSH_HOST secret}" "${SSH_USER:?Add the SSH_USER secret}" "${SSH_PRIVATE_KEY:?Add the SSH_PRIVATE_KEY secret}"
+          PORT="${SSH_PORT:-22}"
+          DIR="${APP_DIR:-/home/viragtrainingsolutions.com/app}"
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          if [ -n "${SSH_KNOWN_HOSTS:-}" ]; then
+            printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            echo "::warning::SSH_KNOWN_HOSTS secret not set – trusting the server key on first use"
+            ssh-keyscan -p "$PORT" -H "$SSH_HOST" > ~/.ssh/known_hosts 2>/dev/null
+          fi
+          ssh -i ~/.ssh/deploy_key -p "$PORT" -o BatchMode=yes -o ConnectTimeout=20 \
+            "$SSH_USER@$SSH_HOST" "cd '$DIR' && bash deploy/update.sh"
+
+      - name: Check live site
+        run: |
+          for i in $(seq 1 10); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' https://viragtrainingsolutions.com/api/health || true)
+            echo "attempt $i: HTTP $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 3
+          done
+          # The server-side health check in update.sh already passed; this public check can be
+          # blocked by Cloudflare bot protection, so it only warns.
+          echo "::warning::https://viragtrainingsolutions.com/api/health did not return 200 – check the site manually"

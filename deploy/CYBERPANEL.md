@@ -141,9 +141,41 @@ Open https://viragtrainingsolutions.com and https://viragtrainingsolutions.com/a
 
 ## 8. Updating later
 
+**Automatic (recommended):** every `git push` to `main` deploys by itself – see *Auto-deploy* below.
+
+**Manual:**
 ```bash
 cd /home/viragtrainingsolutions.com/app && bash deploy/update.sh
 ```
+
+### Auto-deploy with GitHub Actions (one-time setup)
+
+`.github/workflows/deploy.yml` builds the site on GitHub, then logs in to the server over SSH and runs `deploy/update.sh`. A failed build never reaches the server.
+
+**1. On the server – create a key used only by GitHub:**
+```bash
+ssh-keygen -t ed25519 -f ~/.ssh/github_deploy -N "" -C "github-actions-deploy"
+cat ~/.ssh/github_deploy.pub >> ~/.ssh/authorized_keys
+chmod 600 ~/.ssh/authorized_keys
+cat ~/.ssh/github_deploy            # copy this PRIVATE key (all lines) for step 2
+ssh-keyscan -p 22 $(curl -s https://api.ipify.org)   # copy this output for SSH_KNOWN_HOSTS
+```
+(Use your real SSH port instead of 22 if you changed it.)
+
+**2. On GitHub** → repo → *Settings → Secrets and variables → Actions → New repository secret*:
+
+| Secret | Value |
+|---|---|
+| `SSH_HOST` | Server's public IP (not the domain – it is behind Cloudflare) |
+| `SSH_USER` | `root` |
+| `SSH_PRIVATE_KEY` | Private key from step 1, including the `-----BEGIN` / `-----END` lines |
+| `SSH_KNOWN_HOSTS` | `ssh-keyscan` output from step 1 |
+| `SSH_PORT` | Only if not 22 |
+| `APP_DIR` | Only if the app is not in `/home/viragtrainingsolutions.com/app` |
+
+**3. Test:** GitHub → *Actions → Deploy → Run workflow*. Green = deployed. After that every push to `main` deploys automatically (changes to `.md` files only are skipped).
+
+If the server's firewall (CyberPanel → Security → Firewall / CSF) restricts SSH to certain IPs, GitHub's runners must be allowed too.
 
 ## 9. Backups
 
