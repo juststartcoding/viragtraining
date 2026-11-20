@@ -8,6 +8,7 @@ import { api, assetUrl, errMsg } from '../lib/api';
 import { buy } from '../lib/checkout';
 import { inr, discount, videoEmbed, fmtDateTime, fmtDate, fmtMins } from '../lib/format';
 import { Tilt } from './Effects';
+import { FitImage } from './ui';
 import Icon from './Icon';
 
 /* ---------------- Countdown ---------------- */
@@ -226,9 +227,9 @@ export function PurchaseButton({ kind, item, className = '', label }) {
 /* ---------------- Cards ---------------- */
 const cover = (img, icon, g = 'from-brand-600 to-brand-900') =>
   img ? (
-    <img src={assetUrl(img)} alt="" loading="lazy" className="h-48 w-full object-cover transition duration-500 group-hover:scale-105" />
+    <FitImage src={img} className="aspect-video w-full transition duration-500 group-hover:scale-105" />
   ) : (
-    <div className={`relative flex h-48 items-center justify-center overflow-hidden bg-gradient-to-br ${g}`}>
+    <div className={`relative flex aspect-video items-center justify-center overflow-hidden bg-gradient-to-br ${g}`}>
       <div className="grid-lines absolute inset-0 opacity-40" />
       <div className="icon-3d relative h-20 w-20 rotate-[-8deg] border border-white/30 bg-white/15 text-4xl backdrop-blur transition duration-500 group-hover:rotate-0 group-hover:scale-110">
         <Icon name={icon} />

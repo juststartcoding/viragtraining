@@ -2,7 +2,7 @@ import { useParams, Link } from 'react-router-dom';
 import { FaCalendarAlt, FaClock, FaVideo, FaHourglassHalf, FaUsers, FaShieldAlt, FaChalkboardTeacher, FaRecordVinyl, FaUserCheck } from 'react-icons/fa';
 import { useApi, assetUrl } from '../../lib/api';
 import { fmtDate, inr, discount } from '../../lib/format';
-import { Seo, PageHeader, SkeletonGrid, Empty, Loader, SectionHeading } from '../../components/ui';
+import { Seo, PageHeader, SkeletonGrid, Empty, Loader, SectionHeading, FitImage } from '../../components/ui';
 import { Reveal } from '../../components/Effects';
 import { BatchCard, CheckList, Faqs, PriceTag, Person, PurchaseButton, Countdown } from '../../components/lms';
 import NotFound from '../NotFound';
@@ -69,7 +69,7 @@ export function BatchLanding() {
           <div>
             <div className="rounded-3xl bg-white p-3 text-slate-800 shadow-2xl shadow-black/40 lg:sticky lg:top-24">
               {b.thumbnail ? (
-                <img src={assetUrl(b.thumbnail)} alt={b.title} className="aspect-video w-full rounded-2xl object-cover" />
+                <FitImage src={b.thumbnail} alt={b.title} lazy={false} className="aspect-video w-full rounded-2xl" />
               ) : (
                 <div className="grid-lines flex aspect-video items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-800"><FaChalkboardTeacher className="text-6xl text-white/90" /></div>
               )}

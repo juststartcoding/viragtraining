@@ -6,7 +6,7 @@ import { api, useApi, assetUrl, errMsg } from '../../lib/api';
 import { completeCheckout } from '../../lib/checkout';
 import { fmtDateTime, fmtTime, fmtDate, inr, googleCalendarUrl } from '../../lib/format';
 import { useStudent } from '../../context/StudentContext';
-import { Seo, PageHeader, SkeletonGrid, Empty, Loader, SectionHeading } from '../../components/ui';
+import { Seo, PageHeader, SkeletonGrid, Empty, Loader, SectionHeading, FitImage } from '../../components/ui';
 import { Reveal } from '../../components/Effects';
 import { WebinarCard, CheckList, Faqs, Person, Countdown, ManualPaymentModal } from '../../components/lms';
 import NotFound from '../NotFound';
@@ -154,7 +154,7 @@ export function WebinarLanding() {
             )}
           </div>
           <div id="register" className="rounded-3xl bg-white p-6 text-slate-800 shadow-2xl shadow-black/40 md:p-8 lg:sticky lg:top-24">
-            {w.banner && <img src={assetUrl(w.banner)} alt="" className="-mx-2 -mt-2 mb-6 aspect-video w-[calc(100%+1rem)] rounded-2xl object-cover" />}
+            {w.banner && <FitImage src={w.banner} lazy={false} className="-mx-2 -mt-2 mb-6 aspect-video w-[calc(100%+1rem)] rounded-2xl" />}
             <RegisterForm w={w} />
           </div>
         </div>

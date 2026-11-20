@@ -1,6 +1,22 @@
 import { Link } from 'react-router-dom';
 import { FaStar, FaChevronRight } from 'react-icons/fa';
 import { Reveal, Cube } from './Effects';
+import { assetUrl } from '../lib/api';
+
+/**
+ * Shows the whole image without cropping (object-contain). Any empty space
+ * around a differently-shaped image is filled with a blurred copy of it,
+ * so cards stay uniform without white bars. Size it with className, e.g. "aspect-video".
+ */
+export function FitImage({ src, alt = '', className = '', imgClassName = '', lazy = true }) {
+  const url = assetUrl(src);
+  return (
+    <div className={`relative overflow-hidden bg-slate-100 ${className}`}>
+      <img src={url} alt="" aria-hidden="true" className="absolute inset-0 h-full w-full scale-110 object-cover opacity-70 blur-2xl" />
+      <img src={url} alt={alt} loading={lazy ? 'lazy' : undefined} className={`relative h-full w-full object-contain ${imgClassName}`} />
+    </div>
+  );
+}
 
 export function Seo({ title, description }) {
   const full = title ? `${title} | Virag Training Solutions` : 'Virag Training Solutions – IT Training & Software Solutions';

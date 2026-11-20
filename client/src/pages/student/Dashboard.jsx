@@ -8,7 +8,7 @@ import {
 import { useStudent } from '../../context/StudentContext';
 import { api, useApi, assetUrl, errMsg } from '../../lib/api';
 import { fmtDateTime, fmtDate, inr, googleCalendarUrl } from '../../lib/format';
-import { Seo, Loader } from '../../components/ui';
+import { Seo, Loader, FitImage } from '../../components/ui';
 
 const TABS = [
   { id: 'courses', label: 'My Courses', icon: FaBookOpen },
@@ -34,9 +34,9 @@ function Courses({ items }) {
       {items.map((e) => (
         <div key={e.enrollmentId} className="card flex flex-col overflow-hidden">
           {e.course.thumbnail ? (
-            <img src={assetUrl(e.course.thumbnail)} alt="" className="h-40 w-full object-cover" />
+            <FitImage src={e.course.thumbnail} className="aspect-video w-full" />
           ) : (
-            <div className="grid-lines flex h-40 items-center justify-center bg-gradient-to-br from-indigo-600 to-purple-800"><FaPlayCircle className="text-5xl text-white/80" /></div>
+            <div className="grid-lines flex aspect-video items-center justify-center bg-gradient-to-br from-indigo-600 to-purple-800"><FaPlayCircle className="text-5xl text-white/80" /></div>
           )}
           <div className="flex flex-1 flex-col p-5">
             <h3 className="text-base leading-snug">{e.course.title}</h3>

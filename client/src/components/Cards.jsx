@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { FaArrowRight, FaClock, FaCheckCircle, FaQuoteLeft, FaExternalLinkAlt } from 'react-icons/fa';
 import Icon from './Icon';
-import { Stars } from './ui';
+import { Stars, FitImage } from './ui';
 import { Tilt } from './Effects';
 import { assetUrl } from '../lib/api';
 
@@ -16,8 +16,8 @@ const gradients = [
 const grad = (i = 0) => gradients[Math.abs(i) % gradients.length];
 
 /** Image if uploaded, otherwise a branded gradient with an icon */
-function Cover({ image, icon, title, index, className = 'h-44' }) {
-  if (image) return <img src={assetUrl(image)} alt={title} loading="lazy" className={`${className} w-full object-cover`} />;
+function Cover({ image, icon, title, index, className = 'aspect-video' }) {
+  if (image) return <FitImage src={image} alt={title} className={`${className} w-full`} />;
   return (
     <div className={`${className} relative flex items-center justify-center overflow-hidden bg-gradient-to-br ${grad(index)}`}>
       <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-white/10" />
@@ -108,7 +108,7 @@ export function PortfolioCard({ item, index }) {
   return (
     <Tilt max={6} className="card group h-full overflow-hidden hover:shadow-2xl hover:shadow-brand-900/15">
       <div className="relative overflow-hidden">
-        <Cover image={item.image} icon="software" title={item.title} index={index + 1} className="h-52 transition duration-500 group-hover:scale-105" />
+        <Cover image={item.image} icon="software" title={item.title} index={index + 1} className="aspect-video transition duration-500 group-hover:scale-105" />
         <span className="absolute left-4 top-4 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-slate-800 backdrop-blur">{item.category}</span>
       </div>
       <div className="p-6">

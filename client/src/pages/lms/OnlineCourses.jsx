@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { FaPlayCircle, FaLock, FaChevronDown, FaFileAlt, FaFilePdf, FaGlobe, FaSignal, FaClock, FaBookOpen, FaCertificate, FaShieldAlt, FaInfinity } from 'react-icons/fa';
 import { useApi, assetUrl } from '../../lib/api';
 import { inr, discount, fmtMins } from '../../lib/format';
-import { Seo, PageHeader, SkeletonGrid, Empty, Loader, SectionHeading } from '../../components/ui';
+import { Seo, PageHeader, SkeletonGrid, Empty, Loader, SectionHeading, FitImage } from '../../components/ui';
 import { Reveal } from '../../components/Effects';
 import { TestimonialCard } from '../../components/Cards';
 import { OnlineCourseCard, Countdown, CheckList, Faqs, PriceTag, Person, PurchaseButton, VideoPlayer, Modal } from '../../components/lms';
@@ -118,7 +118,7 @@ export function OnlineCourseLanding() {
               {c.promoVideoUrl ? (
                 <VideoPlayer url={c.promoVideoUrl} title={c.title} />
               ) : c.thumbnail ? (
-                <img src={assetUrl(c.thumbnail)} alt={c.title} className="aspect-video w-full rounded-2xl object-cover" />
+                <FitImage src={c.thumbnail} alt={c.title} lazy={false} className="aspect-video w-full rounded-2xl" />
               ) : (
                 <div className="flex aspect-video items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-600 to-purple-800"><FaPlayCircle className="text-6xl text-white/80" /></div>
               )}
