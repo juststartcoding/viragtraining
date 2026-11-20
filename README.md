@@ -34,6 +34,13 @@ For reliable confirmation, also add a webhook in the Razorpay Dashboard: URL `ht
 
 **Live classes:** the student "Join Class" button opens 30 minutes before the start time. It checks enrollment, marks attendance automatically and only then reveals the Zoom/Meet link.
 
+## SEO
+
+- `/robots.txt` and `/sitemap.xml` are generated from the database. New courses, batches and webinars appear in the sitemap automatically.
+- Each page's HTML is rendered on the server with its own title, description, canonical URL, Open Graph/Twitter tags (WhatsApp/Facebook previews) and schema.org data: EducationalOrganization, Course, Event (webinars), BreadcrumbList and FAQPage. Unknown pages return a real 404, and private pages are `noindex`.
+- **Admin → Site Settings → SEO & Analytics:** Google Search Console and Bing verification codes, Google Analytics 4, Microsoft Clarity, Meta Pixel and a default share image. No code changes are needed.
+- After going live, verify the site in Google Search Console (HTML tag method) and submit `https://viragtrainingsolutions.com/sitemap.xml`.
+
 ## Folder structure
 
 ```

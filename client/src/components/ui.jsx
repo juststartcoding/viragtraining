@@ -1,4 +1,5 @@
-import { Link } from 'react-router-dom';
+import { useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { FaStar, FaChevronRight } from 'react-icons/fa';
 import { Reveal, Cube } from './Effects';
 import { assetUrl } from '../lib/api';
@@ -18,14 +19,42 @@ export function FitImage({ src, alt = '', className = '', imgClassName = '', laz
   );
 }
 
+/** Upserts a <meta>/<link> tag in <head> (the server already rendered them for the first page load) */
+function setHead(selector, create, attr, value) {
+  let el = document.head.querySelector(selector);
+  if (!el) {
+    el = create();
+    document.head.appendChild(el);
+  }
+  el.setAttribute(attr, value);
+}
+const metaTag = (attr, name) => () => {
+  const m = document.createElement('meta');
+  m.setAttribute(attr, name);
+  return m;
+};
+const DEFAULT_DESCRIPTION = 'Job-oriented IT training in Java, MERN, Python, PHP, C/C++ & Digital Marketing, plus custom software, academic projects and ready-made software.';
+
+/**
+ * Keeps title, description, canonical and Open Graph tags in sync while navigating
+ * inside the app. Updates the server-rendered tags in place instead of adding duplicates.
+ */
 export function Seo({ title, description }) {
-  const full = title ? `${title} | Virag Training Solutions` : 'Virag Training Solutions – IT Training & Software Solutions';
-  return (
-    <>
-      <title>{full}</title>
-      {description && <meta name="description" content={description} />}
-    </>
-  );
+  const isHome = useLocation().pathname === '/';
+  useEffect(() => {
+    const site = 'Virag Training Solutions';
+    const full = !title ? site : isHome ? `${site} – ${title}` : `${title} | ${site}`;
+    const url = `${location.origin}${location.pathname.replace(/\/+$/, '') || '/'}`;
+    document.title = full;
+    setHead('meta[property="og:title"]', metaTag('property', 'og:title'), 'content', full);
+    setHead('meta[property="og:url"]', metaTag('property', 'og:url'), 'content', url);
+    const canonical = document.head.querySelector('link[rel="canonical"]');
+    if (canonical) canonical.setAttribute('href', url);
+    const d = (description || DEFAULT_DESCRIPTION).replace(/\s+/g, ' ').trim().slice(0, 160);
+    setHead('meta[name="description"]', metaTag('name', 'description'), 'content', d);
+    setHead('meta[property="og:description"]', metaTag('property', 'og:description'), 'content', d);
+  }, [title, description, isHome]);
+  return null;
 }
 
 export function SectionHeading({ eyebrow, title, subtitle, center = true }) {

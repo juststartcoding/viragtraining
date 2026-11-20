@@ -11,6 +11,7 @@ import routes from './routes/index.js';
 import { UPLOAD_DIR } from './routes/upload.js';
 import { errorHandler } from './middleware/error.js';
 import { Admin } from './models/index.js';
+import { seoRouter, renderPage } from './seo.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -28,11 +29,15 @@ app.use('/uploads', express.static(UPLOAD_DIR, { maxAge: '30d' }));
 app.use('/api', routes);
 app.use('/api', (_req, res) => res.status(404).json({ message: 'API route not found' }));
 
-// Serve the built React app in production (single deployment)
+// robots.txt + sitemap.xml (database driven)
+app.use(seoRouter());
+
+// Serve the built React app in production (single deployment).
+// Pages are sent with page-specific SEO tags rendered on the server.
 const clientDist = path.join(__dirname, '../../client/dist');
 if (fs.existsSync(clientDist)) {
   app.use(express.static(clientDist, { index: false, maxAge: '7d' }));
-  app.use((req, res, next) => (['GET', 'HEAD'].includes(req.method) ? res.sendFile(path.join(clientDist, 'index.html')) : next()));
+  app.use((req, res, next) => (['GET', 'HEAD'].includes(req.method) ? renderPage(req, res, clientDist).catch(next) : next()));
 }
 
 app.use(errorHandler);

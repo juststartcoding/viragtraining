@@ -109,6 +109,13 @@ const settingSchema = new Schema(
     mapEmbedUrl: str,
     workingHours: str,
     showCourseFees: { type: Boolean, default: false }, // classroom course fees on the public site
+    // SEO & analytics (rendered into every page's <head> by server/src/seo.js)
+    seoImage: str, // default share image (1200×630) for WhatsApp/Facebook previews
+    googleVerification: str, // Search Console HTML-tag code (content="…")
+    bingVerification: str,
+    ga4Id: str, // G-XXXXXXX
+    clarityId: str,
+    metaPixelId: str,
     paymentInstructions: { ...str, default: 'Pay via UPI / bank transfer and share the screenshot on WhatsApp. Your access will be activated after verification.' },
     heroTitle: str,
     heroSubtitle: str,

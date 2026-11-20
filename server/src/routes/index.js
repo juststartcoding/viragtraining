@@ -7,6 +7,7 @@ import { asyncHandler, HttpError } from '../utils/helpers.js';
 import authRoutes from './auth.js';
 import uploadRoutes from './upload.js';
 import lmsRoutes from './lms.js';
+import { clearSeoCache } from '../seo.js';
 
 const router = Router();
 
@@ -42,6 +43,7 @@ router.put(
     const { _id, __v, createdAt, updatedAt, ...data } = req.body || {};
     s.set(data);
     await s.save();
+    clearSeoCache(); // page <head> tags pick up new verification/analytics IDs immediately
     res.json(s);
   })
 );

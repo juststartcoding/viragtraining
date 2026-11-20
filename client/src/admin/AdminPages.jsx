@@ -251,6 +251,17 @@ const SETTING_GROUPS = [
   { title: 'General', fields: [['siteName', 'Site name'], ['tagline', 'Tagline'], ['logo', 'Logo (optional)', 'image']] },
   { title: 'Contact', fields: [['phone', 'Phone'], ['whatsapp', 'WhatsApp number (with country code, e.g. 919876543210)'], ['email', 'Email'], ['workingHours', 'Working hours'], ['address', 'Address', 'textarea'], ['paymentInstructions', 'Manual payment instructions (UPI ID / bank details – shown when Razorpay is not configured)', 'textarea'], ['mapEmbedUrl', 'Google Maps embed URL (https://www.google.com/maps/embed?...)']] },
   { title: 'Courses', fields: [['showCourseFees', 'Show course fees on the website (when off, visitors see “Get fee details” and are asked to enquire)', 'checkbox']] },
+  {
+    title: 'SEO & Analytics',
+    fields: [
+      ['seoImage', 'Default share image for WhatsApp / Facebook previews (1200×630 recommended)', 'image'],
+      ['googleVerification', 'Google Search Console verification code (only the content="…" value of the HTML tag)'],
+      ['bingVerification', 'Bing Webmaster verification code (content of msvalidate.01)'],
+      ['ga4Id', 'Google Analytics 4 Measurement ID (G-XXXXXXXXXX)'],
+      ['clarityId', 'Microsoft Clarity project ID'],
+      ['metaPixelId', 'Meta (Facebook) Pixel ID (numbers only)'],
+    ],
+  },
   { title: 'Home page hero', fields: [['heroTitle', 'Hero title'], ['heroSubtitle', 'Hero subtitle', 'textarea'], ['heroImage', 'Hero image (optional)', 'image']] },
   { title: 'About page', fields: [['aboutTitle', 'About heading'], ['aboutText', 'About text', 'textarea'], ['mission', 'Mission', 'textarea'], ['vision', 'Vision', 'textarea']] },
 ];

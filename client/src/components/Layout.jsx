@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { FaChevronDown, FaUserCircle, FaBars, FaTimes, FaPhoneAlt, FaEnvelope, FaMapMarkerAlt, FaWhatsapp, FaFacebookF, FaInstagram, FaLinkedinIn, FaYoutube, FaTwitter } from 'react-icons/fa';
 import { useSettings } from '../context/SettingsContext';
@@ -198,9 +198,14 @@ function WhatsAppButton() {
 
 export default function Layout() {
   const { pathname } = useLocation();
+  const firstPage = useRef(true);
   // Block body on purpose: newer browsers return a Promise from scrollTo, and an effect must not return one
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
+    // Meta Pixel only counts the first page itself; report in-app navigation too.
+    // (GA4 and Clarity track these page changes automatically.)
+    if (firstPage.current) firstPage.current = false;
+    else if (typeof window.fbq === 'function') window.fbq('track', 'PageView');
   }, [pathname]);
   return (
     <>
