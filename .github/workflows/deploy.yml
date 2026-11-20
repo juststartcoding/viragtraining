@@ -59,21 +59,60 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
           APP_DIR: ${{ secrets.APP_DIR }}
+        # Every problem is reported as a clear ::error annotation (no secret values or IPs are printed).
         run: |
-          set -euo pipefail
-          : "${SSH_HOST:?Add the SSH_HOST secret}" "${SSH_USER:?Add the SSH_USER secret}" "${SSH_PRIVATE_KEY:?Add the SSH_PRIVATE_KEY secret}"
-          PORT="${SSH_PORT:-22}"
-          DIR="${APP_DIR:-/home/viragtrainingsolutions.com/app}"
+          set -uo pipefail
+          fail() { echo "::error title=Deploy::$1"; exit 1; }
+          # Secrets pasted from Windows often carry \r or stray spaces – clean them
+          trim() { printf '%s' "$1" | tr -d '\r' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//'; }
+          HOST=$(trim "${SSH_HOST:-}"); USER_=$(trim "${SSH_USER:-}")
+          PORT=$(trim "${SSH_PORT:-}"); PORT=${PORT:-22}
+          DIR=$(trim "${APP_DIR:-}"); DIR=${DIR:-/home/viragtrainingsolutions.com/app}
+          hide() { sed -e "s/${HOST//./\\.}/<server>/g"; }
+          for s in SSH_HOST SSH_USER SSH_PRIVATE_KEY SSH_KNOWN_HOSTS SSH_PORT APP_DIR; do
+            [ -n "${!s:-}" ] && echo "secret $s: set" || echo "secret $s: not set"
+          done
+
+          [ -n "$HOST" ] || fail "SSH_HOST secret is missing. Add it under Settings → Secrets and variables → Actions → Repository secrets."
+          [ -n "$USER_" ] || fail "SSH_USER secret is missing (use: root)."
+          [ -n "${SSH_PRIVATE_KEY:-}" ] || fail "SSH_PRIVATE_KEY secret is missing."
+          case "$HOST" in *://*|*/*|*@*) fail "SSH_HOST must be only the server IP, e.g. 123.45.67.89 (no http://, user@ or /).";; esac
+          [[ "$PORT" =~ ^[0-9]+$ ]] || fail "SSH_PORT must be a number like 22."
+
           mkdir -p ~/.ssh && chmod 700 ~/.ssh
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/deploy_key && chmod 600 ~/.ssh/deploy_key
+          grep -qE '^(ssh-ed25519|ssh-rsa|ecdsa-sha2) ' ~/.ssh/deploy_key && fail "SSH_PRIVATE_KEY contains the PUBLIC key (.pub). Paste the output of: cat ~/.ssh/github_deploy"
+          grep -q 'PRIVATE KEY-----' ~/.ssh/deploy_key || fail "SSH_PRIVATE_KEY is not a private key. Paste the full output of: cat ~/.ssh/github_deploy (including the BEGIN and END lines)."
+          ssh-keygen -y -f ~/.ssh/deploy_key > /tmp/deploy.pub 2>/dev/null || fail "SSH_PRIVATE_KEY is incomplete or damaged. Copy the whole output of: cat ~/.ssh/github_deploy again."
+          echo "deploy key fingerprint: $(ssh-keygen -lf /tmp/deploy.pub | awk '{print $2}')  (compare on server: ssh-keygen -lf ~/.ssh/github_deploy.pub)"
+
+          timeout 10 bash -c "exec 3<>/dev/tcp/$HOST/$PORT" 2>/dev/null \
+            || fail "GitHub cannot reach SSH port $PORT on the server. Check: SSH_HOST is the server's public IP (not the Cloudflare domain), SSH_PORT is correct, and the firewall (CyberPanel → Security → Firewall/CSF) allows SSH from any IP."
+          echo "port $PORT reachable"
+
+          lookup="$HOST"; [ "$PORT" != 22 ] && lookup="[$HOST]:$PORT"
           if [ -n "${SSH_KNOWN_HOSTS:-}" ]; then
-            printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+            printf '%s\n' "$SSH_KNOWN_HOSTS" | tr -d '\r' > ~/.ssh/known_hosts
+            ssh-keygen -F "$lookup" -f ~/.ssh/known_hosts >/dev/null \
+              || fail "SSH_KNOWN_HOSTS has no entry for the SSH_HOST IP/port. Run ssh-keyscan with exactly the same IP (and -p port), or delete the SSH_KNOWN_HOSTS secret."
           else
             echo "::warning::SSH_KNOWN_HOSTS secret not set – trusting the server key on first use"
-            ssh-keyscan -p "$PORT" -H "$SSH_HOST" > ~/.ssh/known_hosts 2>/dev/null
+            ssh-keyscan -p "$PORT" -H "$HOST" > ~/.ssh/known_hosts 2>/dev/null
           fi
-          ssh -i ~/.ssh/deploy_key -p "$PORT" -o BatchMode=yes -o ConnectTimeout=20 \
-            "$SSH_USER@$SSH_HOST" "cd '$DIR' && bash deploy/update.sh"
+
+          ssh -i ~/.ssh/deploy_key -p "$PORT" -o BatchMode=yes -o ConnectTimeout=20 -o IdentitiesOnly=yes \
+            "$USER_@$HOST" "cd '$DIR' && bash deploy/update.sh" 2>&1 | hide | tee /tmp/ssh.log
+          rc=${PIPESTATUS[0]}
+          [ "$rc" = 0 ] && exit 0
+          if grep -q 'Permission denied' /tmp/ssh.log; then
+            fail "Server rejected the key for user '$USER_' (Permission denied). Check SSH_USER, and that the fingerprint above matches: ssh-keygen -lf ~/.ssh/github_deploy.pub"
+          elif grep -q 'Host key verification failed\|REMOTE HOST IDENTIFICATION HAS CHANGED' /tmp/ssh.log; then
+            fail "Host key mismatch. Regenerate SSH_KNOWN_HOSTS with ssh-keyscan for the same IP, or delete that secret."
+          elif grep -q 'No such file or directory' /tmp/ssh.log; then
+            fail "App folder not found on the server: $DIR. Set the APP_DIR secret to the right path."
+          else
+            fail "Deploy script failed on the server (exit $rc): $(grep -v '^[[:space:]]*$' /tmp/ssh.log | tail -1 | cut -c1-300)"
+          fi
 
       - name: Check live site
         run: |
